@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,6 +6,10 @@ using UnityEngine.UI;
 
 public class luffyController : MonoBehaviour
 {
+    //public GameObject punto_golpe_katakuri;
+
+   
+
     private float vidaLuffy, VidaActualLuffy=1;
     public Image barraSaludLuffyimg;
     public Image barraEnergiaLuffyimg;
@@ -45,6 +50,9 @@ public class luffyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+       // daño_golpear_recibe();
+
+
         if (Input.GetKey(KeyCode.W) && !EstaSaltando)
             {
                 CambiarAnimacion(ANIMATION_SALTAR);
@@ -113,6 +121,9 @@ public class luffyController : MonoBehaviour
            // Debug.Log(EnergiaActualLuffy);
             
     }
+
+  
+
     public void FrezerMuere(){
         Destroy(this.gameObject);
     }
@@ -133,6 +144,11 @@ public class luffyController : MonoBehaviour
     }
      void OnCollisionEnter2D(Collision2D other)
     {
+        if (other.gameObject.tag=="katakuri")
+        {
+          //  DañoRecibeLuffy();
+        }
+
         EstaSaltando = false;
         if (other.gameObject.tag == "supernova"&&EstaAtacando==true)
         {

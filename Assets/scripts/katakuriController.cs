@@ -6,12 +6,17 @@ using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class katakuriController : MonoBehaviour
-{ 
-      
+{
+
     //---------------------
+    public Text frase;
+    
     public AudioClip[] audioClips;
     private AudioSource audioSource;
+    public GameObject punto_golpe;
+    public GameObject luffy_;
 
+    private float vidaLuffy, vidaLuffyActual = 1;
     private float vidaKatakuri, vidaKatakuriActual = 1;
     private float tiempoDetectar = 4,cuentaBajo;
     private float tiempoTeleport = 3, cuentaBajoTeleport;
@@ -28,6 +33,7 @@ public class katakuriController : MonoBehaviour
 
  
     public Image barraSaludKatakuriImg;
+    public Image barraSaludLuffy;
     private SpriteRenderer spriteRenderer;
     private Animator animator;
     private Rigidbody2D rb;
@@ -35,10 +41,8 @@ public class katakuriController : MonoBehaviour
     private bool estaSaltando=false;
     private bool retroceder=false;
     private bool estagolpeando=false;
-    private bool golpe1=false;
-    private bool golpe2 = false;
-    private bool golpe3 = false;
-    public string DirecJugador;
+    private bool daño=false;
+    private string DirecJugador;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -54,21 +58,9 @@ public class katakuriController : MonoBehaviour
 
     void Update()
     {
+        muerte_luffy();
         contar_ataque();
-
-        if (golpe1==true)
-        {
-            CambiarAnimacion(ANIMATION_PUÑO);
-            audioSource.PlayOneShot(audioClips[0]);
-        }
-        if (golpe2==true)
-        {
-            CambiarAnimacion(ANIMATION_RAFAGA_PUÑO);
-        }
-        if (golpe3==true)
-        {
-            CambiarAnimacion(ANIMATION_ATTACKDISTANCIA);
-        }
+        KaatakuriAtaca();
         if (retroceder==true)
         {
             rb.velocity = new Vector2(2,rb.velocity.y);
@@ -78,40 +70,43 @@ public class katakuriController : MonoBehaviour
             CambiarAnimacion(ANIMATION_QUIETO);
         }
          else
-        {   
-            CambiarAnimacion(ANIMATION_LANZA); 
-           audioSource.PlayOneShot(audioClips[0]);
+        {
+            CambiarAnimacion(ANIMATION_PUÑO);
+            daño_golpear();
+            audioSource.PlayOneShot(audioClips[0]);
             rb.velocity = new Vector2(-1,rb.velocity.y);
            
         }
+        if (contador==1)
+        {
+            frase_final();
+            CambiarAnimacion(ANIMATION_LANZA);
+            daño_lufffi();
+            rb.velocity = new Vector2(-1, rb.velocity.y);
+            audioSource.PlayOneShot(audioClips[0]);
+        }
+        if (contador==3)
+        {
+          CambiarAnimacion(ANIMATION_PISOTON);
+            daño_lufffi();
+            rb.velocity = new Vector2(-1,rb.velocity.y);
+            audioSource.PlayOneShot(audioClips[0]);
+        }
+        if (contador == 5)
+        {
+           CambiarAnimacion(ANIMATION_ATTACKDISTANCIA);
+            daño_lufffi();
+            audioSource.PlayOneShot(audioClips[0]);
+           rb.velocity = new Vector2(-1, rb.velocity.y);
+        }
+        if (contador==7)
+        {
+            CambiarAnimacion(ANIMATION_RAFAGA_PUÑO);
+            daño_lufffi();
+            audioSource.PlayOneShot(audioClips[0]);
+            rb.velocity = new Vector2(-1, rb.velocity.y);
+        }
 
-        //if (contador==3)
-        //{
-        //    CambiarAnimacion(ANIMATION_PISOTON);
-        //    rb.velocity = new Vector2(-1,rb.velocity.y);
-        //    audioSource.PlayOneShot(audioClips[0]);
-        //}
-        //if (contador == 5)
-        //{
-        //   CambiarAnimacion(ANIMATION_ATTACKDISTANCIA);
-        //    audioSource.PlayOneShot(audioClips[0]);
-        //    rb.velocity = new Vector2(-1, rb.velocity.y);
-        //}
-        //if (contador==7)
-        //{
-        //    CambiarAnimacion(ANIMATION_PUÑO);
-        //    audioSource.PlayOneShot(audioClips[0]);
-        //    rb.velocity = new Vector2(-1, rb.velocity.y);
-        //}
-
-        //if (Input.GetKey(KeyCode.J)  )
-        //        {
-        //            rb.velocity = Vector2.up * 5;
-                    
-                    //StartCoroutine("Esperar");
-                   // CambiarAnimacion(ANIMATION_PISOTON);
-                 //   estaSaltando=true;
-                //} 
     }
 
     private void contar_ataque()
@@ -121,7 +116,7 @@ public class katakuriController : MonoBehaviour
 
         if (cuentaBajo<=0f)
         {
-            KaatakuriAtaca();
+          //  KaatakuriAtaca();
             ubicarPlayer();
             cuentaBajo = tiempoDetectar;
            
@@ -139,6 +134,23 @@ public class katakuriController : MonoBehaviour
         vidaKatakuriActual = vidaKatakuriActual - vidaKatakuri;
         barraSaludKatakuriImg.fillAmount = vidaKatakuriActual;
     }
+
+    public void DañoRecibeLuffy()
+    {
+        
+            vidaLuffy = 0.2f;
+            vidaLuffyActual = vidaLuffyActual - vidaLuffy;
+            barraSaludLuffy.fillAmount = vidaLuffyActual;
+    }
+
+    private void muerte_luffy()
+    {
+        if (vidaLuffyActual <=0)
+        {
+            Destroy(luffy_);
+        }
+    }
+
     IEnumerator Esperar(){
         yield return new WaitForSecondsRealtime((3/2));
     }
@@ -151,29 +163,34 @@ public class katakuriController : MonoBehaviour
     {
         var distancia = transform.position.x - luffyController.instance.transform.position.x;
         
-        if (distancia < 3)
-        {
-            golpe1 = true;
-            Debug.Log("golpe1");
-        }
-        else if (distancia < 6)
-        {
-            golpe2 = true;
-            Debug.Log("golpe2");
-        }
-        else if (distancia < 9)
-        {
-            golpe3 = true;
-            Debug.Log("golpe3");
-        }
-        else if (distancia > 12)
+         if (distancia > 16)
         {
             estagolpeando = true;
-            Debug.Log("golpe distancias");
         }
         else
         {
             estagolpeando = false;
+        }
+    }
+
+    private void daño_golpear()
+    {
+        var distancia_golpe = punto_golpe.transform.position.x - luffyController.instance.transform.position.x;
+
+        if (distancia_golpe <=0)
+        {
+            DañoRecibeLuffy();
+
+            Debug.Log("puño");
+        }
+    }
+    public void daño_lufffi()
+    {
+        var distancia_luffi = transform.position.x - luffyController.instance.transform.position.x;
+        Debug.Log(distancia_luffi+"luffi");
+        if (distancia_luffi <=1)
+        {
+            DañoRecibeLuffy();
         }
     }
     private void ubicarPlayer()
@@ -195,19 +212,16 @@ public class katakuriController : MonoBehaviour
     {
         if (collision.gameObject.tag == "A")
         {
-          //  estagolpeando = true;
-          //  contador++;
-          //  if (contador==2 || contador==4 ||contador==6 || contador==8)
-          //  {
-         //       estagolpeando = false;
-         //       retroceder = true;
+            estagolpeando = true;
+            contador++;
+            if (contador == 2 || contador == 4 || contador == 6 || contador == 8)
+            {
+                estagolpeando = false;
+                retroceder = true;
 
-          //      if (contador==9)
-          //      {
-           //         contador--;
-           //         Debug.Log(contador);
-           //     }
-          //  }
+            }
+
+            Debug.Log(contador);
         }
        
     }
@@ -222,8 +236,19 @@ public class katakuriController : MonoBehaviour
             if (vidaKatakuriActual<=0)
             {
                 Destroy(this.gameObject);
+                frase_final();
                 Debug.Log("muerte");
             }
+            
         }
+
+        
+    }
+
+    private void frase_final()
+    {
+        var position = new Vector2(frase.transform.position.x,frase.transform.position.y);
+        var rotation =frase.transform.rotation;
+        Instantiate(frase,position,rotation);
     }
 }
